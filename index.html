@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulator Web3</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f0f0f, #1a1a1a);
+      color: #00ffe7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background: #1f1f1f;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0,255,231,0.2);
+      padding: 20px;
+      width: 320px;
+    }
+    .display {
+      width: 100%;
+      font-size: 2em;
+      height: 60px;
+      text-align: right;
+      margin-bottom: 10px;
+      border: none;
+      background: #2a2a2a;
+      color: #00ffe7;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 70px);
+      grid-gap: 10px;
+    }
+    button {
+      height: 60px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #333;
+      color: #00ffe7;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #444;
+    }
+    button.operator {
+      background-color: #005f73;
+    }
+    button.equals {
+      background-color: #00b4d8;
+      color: black;
+    }
+    .history {
+      margin-top: 15px;
+      background: #2d2d2d;
+      padding: 10px;
+      border-radius: 8px;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <input type="text" class="display" id="display" disabled>
+  <div class="buttons">
+    <button onclick="clearMemory()">MC</button>
+    <button onclick="recallMemory()">MR</button>
+    <button onclick="addMemory()">M+</button>
+    <button onclick="subtractMemory()">M-</button>
+
+    <button onclick="saveMemory()">MS</button>
+    <button onclick="noop()">Mv</button>
+    <button onclick="clearEntry()">CE</button>
+    <button onclick="clearDisplay()">C</button>
+
+    <button onclick="backspace()">⌫</button>
+    <button onclick="percent()">%</button>
+    <button onclick="inverse()">1/x</button>
+    <button onclick="square()">x²</button>
+
+    <button onclick="sqrt()">√</button>
+    <button onclick="inputValue('/')">÷</button>
+    <button onclick="inputValue('*')">×</button>
+    <button onclick="inputValue('-')">−</button>
+
+    <button onclick="inputValue('7')">7</button>
+    <button onclick="inputValue('8')">8</button>
+    <button onclick="inputValue('9')">9</button>
+    <button onclick="inputValue('+')">+</button>
+
+    <button onclick="inputValue('4')">4</button>
+    <button onclick="inputValue('5')">5</button>
+    <button onclick="inputValue('6')">6</button>
+    <button onclick="calculate()" class="equals">=</button>
+
+    <button onclick="inputValue('1')">1</button>
+    <button onclick="inputValue('2')">2</button>
+    <button onclick="inputValue('3')">3</button>
+    <button onclick="toggleSign()">+/−</button>
+
+    <div></div>
+    <button onclick="inputValue('0')">0</button>
+    <button onclick="inputValue('.')">.</button>
+    <div></div>
+  </div>
+
+  <div class="history" id="history"></div>
+</div>
+
+<script>
+  let display = document.getElementById('display');
+  let historyEl = document.getElementById('history');
+  let memory = 0;
+
+  function inputValue(val) {
+    display.value += val;
+  }
+
+  function clearDisplay() {
+    display.value = '';
+  }
+
+  function clearEntry() {
+    display.value = '';
+  }
+
+  function backspace() {
+    display.value = display.value.slice(0, -1);
+  }
+
+  function calculate() {
+    try {
+      const result = eval(display.value);
+      historyEl.innerHTML += `<div>${display.value} = ${result}</div>`;
+      display.value = result;
+    } catch {
+      display.value = 'Error';
+    }
+  }
+
+  function percent() {
+    display.value = eval(display.value) / 100;
+  }
+
+  function inverse() {
+    display.value = 1 / eval(display.value);
+  }
+
+  function square() {
+    display.value = Math.pow(eval(display.value), 2);
+  }
+
+  function sqrt() {
+    display.value = Math.sqrt(eval(display.value));
+  }
+
+  function toggleSign() {
+    display.value = eval(display.value) * -1;
+  }
+
+  function clearMemory() {
+    memory = 0;
+  }
+
+  function recallMemory() {
+    display.value += memory;
+  }
+
+  function addMemory() {
+    memory += eval(display.value);
+  }
+
+  function subtractMemory() {
+    memory -= eval(display.value);
+  }
+
+  function saveMemory() {
+    memory = eval(display.value);
+  }
+
+  function noop() {
+    alert("Fungsi Mv belum diimplementasikan.");
+  }
+
+  // Keyboard input handler
+  document.addEventListener('keydown', function (event) {
+    const key = event.key;
+    if (!isNaN(key) || ['+', '-', '*', '/', '.', '(', ')'].includes(key)) {
+      inputValue(key);
+    } else if (key === 'Enter') {
+      calculate();
+    } else if (key === 'Backspace') {
+      backspace();
+    } else if (key === 'Escape') {
+      clearDisplay();
+    }
+  });
+</script>
+
+</body>
+</html>
