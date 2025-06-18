@@ -2,77 +2,144 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator Web3</title>
+  <title>Kalkulator Web3 Canggih</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f0f0f, #1a1a1a);
-      color: #00ffe7;
+      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
+      transition: background 0.3s, color 0.3s;
     }
+
+    body.dark {
+      background: #0f0f0f;
+      color: #00ffe7;
+    }
+
+    body.light {
+      background: #f9f9f9;
+      color: #111;
+    }
+
     .calculator {
-      background: #1f1f1f;
-      border-radius: 15px;
-      box-shadow: 0 0 25px rgba(0,255,231,0.2);
+      width: 340px;
       padding: 20px;
-      width: 320px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0,255,231,0.15);
+      transition: background 0.3s;
     }
+
+    .calculator.dark {
+      background: #1f1f1f;
+    }
+
+    .calculator.light {
+      background: #ffffff;
+    }
+
     .display {
       width: 100%;
-      font-size: 2em;
       height: 60px;
+      font-size: 2em;
       text-align: right;
-      margin-bottom: 10px;
-      border: none;
-      background: #2a2a2a;
-      color: #00ffe7;
       padding: 10px;
       border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
     }
+
+    .display.dark {
+      background: #2a2a2a;
+      color: #00ffe7;
+    }
+
+    .display.light {
+      background: #eee;
+      color: #111;
+    }
+
     .buttons {
       display: grid;
       grid-template-columns: repeat(4, 70px);
       grid-gap: 10px;
     }
+
     button {
       height: 60px;
       font-size: 18px;
       border: none;
       border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    .dark button {
       background: #333;
       color: #00ffe7;
-      cursor: pointer;
-      transition: 0.2s;
     }
-    button:hover {
-      background: #444;
+
+    .light button {
+      background: #ddd;
+      color: #000;
     }
-    button.operator {
-      background-color: #005f73;
+
+    .operator {
+      background-color: #0077b6 !important;
+      color: #fff !important;
     }
-    button.equals {
-      background-color: #00b4d8;
-      color: black;
+
+    .equals {
+      background-color: #00b4d8 !important;
+      color: black !important;
     }
+
     .history {
       margin-top: 15px;
-      background: #2d2d2d;
-      padding: 10px;
-      border-radius: 8px;
-      max-height: 100px;
+      max-height: 120px;
       overflow-y: auto;
       font-size: 14px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .dark .history {
+      background: #2d2d2d;
+      color: #00ffe7;
+    }
+
+    .light .history {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    .toggle-theme {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .toggle-theme button {
+      padding: 5px 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
-<body>
+<body class="dark">
 
-<div class="calculator">
-  <input type="text" class="display" id="display" disabled>
+<div class="calculator dark" id="calculator">
+  <div class="toggle-theme">
+    <button onclick="toggleTheme()">Ganti Tema</button>
+  </div>
+  <input type="text" class="display dark" id="display" disabled>
   <div class="buttons">
     <button onclick="clearMemory()">MC</button>
     <button onclick="recallMemory()">MR</button>
@@ -118,31 +185,53 @@
   <div class="history" id="history"></div>
 </div>
 
+<audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+
 <script>
-  let display = document.getElementById('display');
-  let historyEl = document.getElementById('history');
+  const display = document.getElementById('display');
+  const historyEl = document.getElementById('history');
+  const body = document.body;
+  const calculator = document.getElementById('calculator');
+  const clickSound = document.getElementById('clickSound');
+
   let memory = 0;
+  let theme = localStorage.getItem('theme') || 'dark';
+
+  // Apply saved theme
+  setTheme(theme);
+
+  // Load history
+  let historyList = JSON.parse(localStorage.getItem('calcHistory')) || [];
+  renderHistory();
 
   function inputValue(val) {
+    click();
     display.value += val;
   }
 
   function clearDisplay() {
+    click();
     display.value = '';
   }
 
   function clearEntry() {
+    click();
     display.value = '';
   }
 
   function backspace() {
+    click();
     display.value = display.value.slice(0, -1);
   }
 
   function calculate() {
+    click();
     try {
       const result = eval(display.value);
-      historyEl.innerHTML += `<div>${display.value} = ${result}</div>`;
+      const record = `${display.value} = ${result}`;
+      historyList.push(record);
+      localStorage.setItem('calcHistory', JSON.stringify(historyList));
+      renderHistory();
       display.value = result;
     } catch {
       display.value = 'Error';
@@ -150,59 +239,71 @@
   }
 
   function percent() {
+    click();
     display.value = eval(display.value) / 100;
   }
 
   function inverse() {
+    click();
     display.value = 1 / eval(display.value);
   }
 
   function square() {
+    click();
     display.value = Math.pow(eval(display.value), 2);
   }
 
   function sqrt() {
+    click();
     display.value = Math.sqrt(eval(display.value));
   }
 
   function toggleSign() {
+    click();
     display.value = eval(display.value) * -1;
   }
 
-  function clearMemory() {
-    memory = 0;
+  function clearMemory() { memory = 0; click(); }
+  function recallMemory() { display.value += memory; click(); }
+  function addMemory() { memory += eval(display.value); click(); }
+  function subtractMemory() { memory -= eval(display.value); click(); }
+  function saveMemory() { memory = eval(display.value); click(); }
+  function noop() { alert("Fungsi Mv belum tersedia."); click(); }
+
+  function renderHistory() {
+    historyEl.innerHTML = '';
+    historyList.slice(-5).forEach(item => {
+      historyEl.innerHTML += `<div>${item}</div>`;
+    });
   }
 
-  function recallMemory() {
-    display.value += memory;
+  function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', theme);
+    setTheme(theme);
   }
 
-  function addMemory() {
-    memory += eval(display.value);
+  function setTheme(themeName) {
+    body.className = themeName;
+    calculator.className = `calculator ${themeName}`;
+    display.className = `display ${themeName}`;
+    historyEl.className = `history ${themeName}`;
   }
 
-  function subtractMemory() {
-    memory -= eval(display.value);
+  function click() {
+    clickSound.currentTime = 0;
+    clickSound.play();
   }
 
-  function saveMemory() {
-    memory = eval(display.value);
-  }
-
-  function noop() {
-    alert("Fungsi Mv belum diimplementasikan.");
-  }
-
-  // Keyboard input handler
-  document.addEventListener('keydown', function (event) {
-    const key = event.key;
-    if (!isNaN(key) || ['+', '-', '*', '/', '.', '(', ')'].includes(key)) {
-      inputValue(key);
-    } else if (key === 'Enter') {
+  // Keyboard support
+  document.addEventListener('keydown', (e) => {
+    if (!isNaN(e.key) || ['+', '-', '*', '/', '.', '(', ')'].includes(e.key)) {
+      inputValue(e.key);
+    } else if (e.key === 'Enter') {
       calculate();
-    } else if (key === 'Backspace') {
+    } else if (e.key === 'Backspace') {
       backspace();
-    } else if (key === 'Escape') {
+    } else if (e.key === 'Escape') {
       clearDisplay();
     }
   });
